@@ -70,9 +70,10 @@
       <span>StudyAI<span style="color:var(--accent-secondary);">.py</span></span>
     </div>
     <div class="nav-links">
-      <a href="#features-section">Features</a>
-      <a href="#modules-section">Modules</a>
-      <a href="#about-section">DSA</a>
+      <a href="#features-section" onclick="smoothScroll('features-section')">Features</a>
+      <a href="#modules-section" onclick="smoothScroll('modules-section')">Modules</a>
+      <a href="#about-section" onclick="smoothScroll('about-section')">DSA</a>
+      <a href="#maker-section" onclick="smoothScroll('maker-section')">About</a>
     </div>
     <div class="nav-actions">
       <button class="btn-ghost" onclick="showAuthModal('login')">Log In</button>
@@ -124,17 +125,17 @@
       <!-- Stats Row -->
       <div class="hero-stats animate-pop-in stagger-5">
         <div class="stat-item">
-          <span class="stat-num" id="stat-tasks">15000+</span>
+          <span class="stat-num counter" data-target="15000" data-suffix="+">0+</span>
           <span class="stat-label">Tasks Scheduled</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
-          <span class="stat-num" style="color:var(--accent-primary)">6</span>
+          <span class="stat-num counter" data-target="6" style="color:var(--accent-primary)">0</span>
           <span class="stat-label">DSA Algorithms</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
-          <span class="stat-num" style="color:var(--accent-secondary)">100%</span>
+          <span class="stat-num counter" data-target="100" data-suffix="%" style="color:var(--accent-secondary)">0%</span>
           <span class="stat-label">Python</span>
         </div>
       </div>
@@ -190,7 +191,7 @@
         ] %}
 
         {% for name, tag, units, progress, color_class, icon_path, color_var, rgb_var in modules %}
-        <div class="study-module animate-pop-in stagger-{{ loop.index }}" style="--module-color:{{ color_var }};--module-color-rgb:var({{ rgb_var }})">
+        <div class="study-module animate-pop-in stagger-{{ loop.index }}" style="--module-color:{{ color_var }};--module-color-rgb:var({{ rgb_var }})" onclick="openModule('{{ tag }}')" role="button" tabindex="0" title="Start studying {{ name }}">
           <div class="study-module-inner">
             <div class="study-module-icon neon-icon {{ color_class }}">
               <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.5">
@@ -198,13 +199,14 @@
               </svg>
             </div>
             <div class="study-module-title">{{ name }}</div>
-            <div class="study-module-desc">{{ tag }} — scheduled with Python DSA algorithms.</div>
+            <div class="study-module-desc">{{ tag }} — Python DSA-scheduled study path.</div>
             <div class="study-module-meta">
               <span class="study-module-badge" style="background:rgba(var({{ rgb_var }}),0.1);color:{{ color_var }}">{{ units }} Units</span>
               <div class="study-module-progress">
                 <div class="study-module-progress-fill" style="width:{{ progress }}%;background:{{ color_var }};"></div>
               </div>
             </div>
+            <div class="module-cta">Start Learning →</div>
           </div>
         </div>
         {% endfor %}
@@ -235,17 +237,31 @@
           ('Sliding Window', 'O(n)', 'SMA Analytics', '7-day Simple Moving Average for productivity trend detection.', 'red', '14'),
         ] %}
 
+        {% set snippets = [
+          'heapq.heappush(heap, (-score, id, task))',
+          'queue = deque([n for n in nodes if in_degree[n]==0])',
+          'tasks.sort(key=lambda t: t["deadline"])',
+          'dp[i][w] = max(dp[i-1][w], dp[i-1][w-wt]+val)',
+          'mid=(lo+hi)//2; if slots[mid]>=t: hi=mid-1',
+          'deq.append(d); if len(deq)>w: deq.popleft()',
+        ] %}
         {% for algo, complexity, type_, desc, color_class, units in algos %}
-        <div class="dsa-card glass-effect animate-pop-in stagger-{{ loop.index }}">
+        <div class="dsa-card glass-effect animate-pop-in stagger-{{ loop.index }}" onclick="toggleDSACard(this)" role="button" tabindex="0">
           <div class="dsa-card-header">
             <span class="dsa-badge neon-icon {{ color_class }}">{{ complexity }}</span>
             <span class="dsa-type">{{ type_ }}</span>
           </div>
           <h4 class="dsa-name">{{ algo }}</h4>
           <p class="dsa-desc">{{ desc }}</p>
-          <div class="dsa-lang-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16"/></svg>
-            Python
+          <div class="dsa-snippet" style="display:none;">
+            <code class="code-block">{{ snippets[loop.index0] }}</code>
+          </div>
+          <div class="dsa-footer">
+            <div class="dsa-lang-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16"/></svg>
+              Python · Click to see snippet
+            </div>
+            <span class="dsa-expand-hint">▼</span>
           </div>
         </div>
         {% endfor %}
@@ -305,6 +321,94 @@
         </div>
       </div>
     </div>
+
+    <!-- ── MADE BY SECTION ─────────────────────────── -->
+    <div class="glow-divider" style="max-width:900px;margin:3rem auto;"></div>
+    <div id="maker-section" class="maker-section">
+      <div class="section-header" style="text-align:center;">
+        <span class="floating-badge" style="background:rgba(var(--accent-pink-rgb),0.08);color:var(--accent-pink);border-color:rgba(var(--accent-pink-rgb),0.15);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 000-7.78z"/></svg>
+          Made With Passion
+        </span>
+        <h2 style="margin:.5rem 0;">Built By</h2>
+        <p style="color:var(--text-secondary);font-size:.9rem;">This project was designed and developed as a showcase of Python DSA skills.</p>
+      </div>
+
+      <div class="maker-card glass-effect animate-pop-in">
+        <!-- Avatar -->
+        <div class="maker-avatar">
+          <div class="maker-avatar-ring"></div>
+          <div class="maker-avatar-inner">YL</div>
+          <div class="maker-status"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="maker-info">
+          <h3 class="maker-name">Yash Lanke</h3>
+          <p class="maker-role">Full-Stack Developer &amp; CS Student</p>
+          <p class="maker-bio">Passionate about Data Structures, Algorithms, and building production-grade Python applications. This planner demonstrates real algorithm implementations — not just CRUD.</p>
+
+          <div class="maker-tech-stack">
+            <span class="tech-chip python">🐍 Python</span>
+            <span class="tech-chip flask">⚗️ Flask</span>
+            <span class="tech-chip">🧮 DSA</span>
+            <span class="tech-chip">🗄️ SQLAlchemy</span>
+            <span class="tech-chip">🔐 JWT</span>
+          </div>
+
+          <div class="maker-links">
+            <a href="https://github.com/yashlanke44" target="_blank" rel="noopener" class="maker-link github">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+              @yashlanke44 on GitHub
+            </a>
+            <a href="https://github.com/yashlanke44/Smart-Study-Planner" target="_blank" rel="noopener" class="maker-link repo">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+              View Source Code
+            </a>
+            <button class="maker-link share" onclick="shareApp()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share Project
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats side -->
+        <div class="maker-stats">
+          <div class="maker-stat">
+            <div class="maker-stat-num gradient-text">6</div>
+            <div class="maker-stat-label">DSA Algorithms</div>
+          </div>
+          <div class="maker-stat">
+            <div class="maker-stat-num" style="color:var(--accent-secondary)">100%</div>
+            <div class="maker-stat-label">Python</div>
+          </div>
+          <div class="maker-stat">
+            <div class="maker-stat-num" style="color:var(--accent-cyan)">MIT</div>
+            <div class="maker-stat-label">License</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── FOOTER ─────────────────────────────────── -->
+    <footer class="landing-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+          </svg>
+          <span>StudyAI<span style="color:var(--accent-secondary)">.py</span></span>
+        </div>
+        <p class="footer-copy">Built with 🐍 Python &amp; ❤️ by <a href="https://github.com/yashlanke44" target="_blank">Yash Lanke</a> · MIT License · 2026</p>
+        <div class="footer-links">
+          <a href="https://github.com/yashlanke44/Smart-Study-Planner" target="_blank">GitHub Repo</a>
+          <span>·</span>
+          <a href="https://github.com/yashlanke44" target="_blank">@yashlanke44</a>
+          <span>·</span>
+          <a href="/dashboard">Launch App</a>
+        </div>
+      </div>
+    </footer>
   </section>
 </main>
 
@@ -465,6 +569,68 @@
       err.textContent = ex.message; err.style.display = 'block';
     } finally {
       btn.disabled = false; btn.querySelector('.btn-text').textContent = 'Create Account';
+    }
+  }
+
+  /* ── Smooth Scroll ──────────────────────────────────── */
+  function smoothScroll(id) {
+    event.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── Animated Counters ──────────────────────────────── */
+  function animateCounters() {
+    document.querySelectorAll('.counter').forEach(el => {
+      const target = +el.dataset.target;
+      const suffix = el.dataset.suffix || '';
+      const duration = 1400;
+      const step = target / (duration / 16);
+      let current = 0;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.floor(current).toLocaleString() + suffix;
+      }, 16);
+    });
+  }
+  // Run counters when hero is visible
+  setTimeout(animateCounters, 600);
+
+  /* ── Clickable Study Modules ────────────────────────── */
+  function openModule(subject) {
+    // Store selected subject for pre-filtering in dashboard
+    sessionStorage.setItem('ssp_subject', subject);
+    // Check login status
+    fetch('/api/auth/me').then(r => {
+      if (r.ok) window.location.href = '/dashboard';
+      else showAuthModal('register');
+    });
+  }
+  // Keyboard support for modules
+  document.querySelectorAll('.study-module[role=button]').forEach(el => {
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') el.click(); });
+  });
+
+  /* ── DSA Card Expand ────────────────────────────────── */
+  function toggleDSACard(card) {
+    const snippet = card.querySelector('.dsa-snippet');
+    const hint    = card.querySelector('.dsa-expand-hint');
+    const isOpen  = snippet.style.display !== 'none';
+    snippet.style.display = isOpen ? 'none' : 'block';
+    hint.textContent = isOpen ? '▼' : '▲';
+    card.classList.toggle('dsa-expanded', !isOpen);
+  }
+  document.querySelectorAll('.dsa-card[role=button]').forEach(el => {
+    el.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' ') toggleDSACard(el); });
+  });
+
+  /* ── Share App ──────────────────────────────────────── */
+  function shareApp() {
+    if (navigator.share) {
+      navigator.share({ title: 'Smart Study Planner', url: 'https://github.com/yashlanke44/Smart-Study-Planner' });
+    } else {
+      navigator.clipboard.writeText('https://github.com/yashlanke44/Smart-Study-Planner');
+      showToast('Repo link copied to clipboard! 📋', 'success');
     }
   }
 </script>

@@ -3,6 +3,10 @@
 
 {% block content %}
 <div id="app-shell">
+<!-- Mobile hamburger -->
+<button class="sidebar-toggle" id="sidebar-toggle" aria-label="Toggle menu">
+  <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
 
   <!-- ── Sidebar ─────────────────────────────────────────── -->
   <aside id="sidebar" class="sidebar glass-effect">
@@ -346,6 +350,15 @@ window.addEventListener('DOMContentLoaded', async () => {
   await loadCurrentUser();
   await loadDashboard();
   initBackground();
+  // Apply subject pre-filter from landing page module click
+  const preSubject = sessionStorage.getItem('ssp_subject');
+  if (preSubject) {
+    sessionStorage.removeItem('ssp_subject');
+    switchView('tasks');
+    const sel = document.getElementById('filter-subject');
+    if (sel) { sel.value = preSubject; loadTasks(); }
+    showToast('Showing tasks for ' + preSubject + ' 📚', 'info');
+  }
 });
 
 /* ── View Switching ────────────────────────────────── */

@@ -77,7 +77,30 @@ function initBackground() {
   window.addEventListener('resize', () => { resize(); });
 }
 
-/* ── Toast Notifications ─────────────────────────── */
+/* ── Scroll-Reveal via Intersection Observer ─────── */
+function initScrollReveal() {
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('revealed'); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.scroll-reveal').forEach(el => io.observe(el));
+}
+document.addEventListener('DOMContentLoaded', () => {
+  initScrollReveal();
+  initBackground();
+  /* Mobile sidebar toggle */
+  const toggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.querySelector('.sidebar');
+  if (toggle && sidebar) {
+    toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', (e) => {
+      if (sidebar.classList.contains('open') && !sidebar.contains(e.target) && !toggle.contains(e.target)) {
+        sidebar.classList.remove('open');
+      }
+    });
+  }
+});
 function showToast(msg, type = 'info', duration = 3500) {
   const container = document.getElementById('toast-container');
   if (!container) return;
