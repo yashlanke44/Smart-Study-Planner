@@ -527,9 +527,7 @@ select.select-input option { background:var(--bg-secondary); }
 @keyframes toast-in { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
 
 /* ─── Mobile Responsive ──────────────────────────── */
-/* Consolidated at the end of the file */
-body.mobile-view .sidebar { display:none; }
-body.mobile-view #main-content { max-width:100vw; }
+/* Fully consolidated at the end of the file */
 
 /* ─── Module CTA ─────────────────────────────────── */
 .module-cta {
@@ -711,7 +709,7 @@ body.mobile-view #main-content { max-width:100vw; }
     background:rgba(9,9,11,0.95); backdrop-filter:blur(20px);
     width: 250px;
   }
-  .sidebar.open { left:0; border-right: 1px solid rgba(255,255,255,0.1); box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
+  .sidebar.open { left:0; border-right: 1px solid rgba(255,255,255,0.1); box-shadow: 4px 0 24px rgba(0,0,0,0.5); display:flex; }
   
   #main-content { 
     max-width:100vw; 
@@ -721,3 +719,22 @@ body.mobile-view #main-content { max-width:100vw; }
   /* Modals */
   .modal-card { padding: 1.5rem; }
 }
+
+/* ─── Manual Mobile View Toggle (.mobile-view applied by JS) ── */
+body.mobile-view .landing-nav { padding: .75rem 1rem; }
+body.mobile-view .landing-nav .nav-links { display:none; }
+body.mobile-view .hero-section { padding: 3rem 1rem; }
+body.mobile-view .hero-title { font-size: clamp(2rem, 9vw, 2.5rem); }
+body.mobile-view .feature-row, body.mobile-view .feature-row.reversed { flex-direction:column; gap: 1.5rem; text-align:center; padding: 2rem 1rem; }
+body.mobile-view .feature-visual { width:100%; max-width:300px; margin:0 auto; }
+body.mobile-view .sidebar-toggle { display:flex; }
+body.mobile-view .sidebar { 
+  position:fixed; top:0; left:-260px; bottom:0; z-index:400; 
+  transition:left .3s var(--ease-out-expo); 
+  background:rgba(9,9,11,0.95); backdrop-filter:blur(20px);
+  width: 250px;
+}
+body.mobile-view .sidebar.open { left:0; border-right: 1px solid rgba(255,255,255,0.1); box-shadow: 4px 0 24px rgba(0,0,0,0.5); display:flex; }
+body.mobile-view #main-content { max-width:100vw; padding: 4.5rem 1rem 1.5rem 1rem; }
+body.mobile-view .maker-card { flex-direction:column; align-items:center; }
+body.mobile-view .maker-stats { flex-direction:row; border-left:none; padding-left:0; border-top:1px solid var(--border-color); padding-top:1.25rem; width:100%; justify-content:space-around; gap:.5rem; flex-wrap:wrap; }
