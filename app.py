@@ -182,9 +182,12 @@ def create_app() -> Flask:
             if field in data:
                 setattr(task, field, data[field])
         if 'duration_hrs' in data:
-            task.duration_hrs = float(data['duration_hrs'])
-        if 'deadline' in data and data['deadline']:
-            task.deadline = datetime.fromisoformat(data['deadline'].replace('Z', '+00:00'))
+            task.duration_hrs = float(data['duration_hrs'] or 1.0)
+        if 'deadline' in data:
+            if data['deadline']:
+                task.deadline = datetime.fromisoformat(data['deadline'].replace('Z', '+00:00'))
+            else:
+                task.deadline = None
         if data.get('status') == 'completed' and not task.completed_at:
             task.completed_at = datetime.utcnow()
 
@@ -212,8 +215,11 @@ def create_app() -> Flask:
         tasks = Task.query.filter_by(user_id=uid).filter(Task.status != 'completed').all()
 
         task_dicts   = [t.to_dict() for t in tasks]
-        budget       = float(data.get('time_budget_hrs', 8.0))
-        dependencies = data.get('dependencies', {})
+        budget       = float(data.get('time_budget_hrs', 8.0) or 8.0)
+        dependencies = data.get('dependencies')
+        if not isinstance(dependencies, dict):
+            dependencies = {}
+        
         # Convert string keys from JSON to int
         deps_int = {int(k): v for k, v in dependencies.items()}
 

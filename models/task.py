@@ -37,14 +37,15 @@ class Task(db.Model):
         priority_map = {'low': 1, 'medium': 2, 'high': 3, 'critical': 5}
         weight = priority_map.get(self.priority, 2)
         if self.deadline:
-            delta = (self.deadline - datetime.utcnow()).total_seconds() / 86400
+            dl_naive = self.deadline.replace(tzinfo=None)
+            delta = (dl_naive - datetime.utcnow()).total_seconds() / 86400
             days  = max(delta, 0.1)
             return round(weight / days, 4)
         return weight
 
     @property
     def is_overdue(self) -> bool:
-        return bool(self.deadline and self.deadline < datetime.utcnow() and self.status != 'completed')
+        return bool(self.deadline and self.deadline.replace(tzinfo=None) < datetime.utcnow() and self.status != 'completed')
 
     @property
     def tag_list(self) -> list:
