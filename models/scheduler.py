@@ -127,8 +127,10 @@ def earliest_deadline_first(tasks: List[dict]) -> List[dict]:
 
     Returns tasks sorted by deadline (ascending), None deadlines last.
     """
-    has_deadline     = [t for t in tasks if t.get('deadline') and t.get('status') != 'completed']
-    no_deadline      = [t for t in tasks if not t.get('deadline') and t.get('status') != 'completed']
+    has_deadline = [t for t in tasks if t.get(
+        'deadline') and t.get('status') != 'completed']
+    no_deadline = [t for t in tasks if not t.get(
+        'deadline') and t.get('status') != 'completed']
 
     def _parse_deadline(t: dict) -> datetime:
         dl = t['deadline']
@@ -156,14 +158,14 @@ def knapsack_schedule(tasks: List[dict], time_budget_hrs: float) -> List[dict]:
     Returns the optimal subset of tasks.
     """
     pending = [t for t in tasks if t.get('status') != 'completed']
-    n       = len(pending)
-    W       = int(time_budget_hrs * 10)   # convert to tenths-of-hour units
+    n = len(pending)
+    W = int(time_budget_hrs * 10)   # convert to tenths-of-hour units
 
     if n == 0 or W == 0:
         return []
 
     # Build values and weights
-    values  = [int(t.get('urgency_score', 1) * 10) for t in pending]
+    values = [int(t.get('urgency_score', 1) * 10) for t in pending]
     weights = [max(1, int(t.get('duration_hrs', 1) * 10)) for t in pending]
 
     # DP table: dp[i][w] = max value using first i items with capacity w
@@ -172,7 +174,8 @@ def knapsack_schedule(tasks: List[dict], time_budget_hrs: float) -> List[dict]:
         for w in range(W + 1):
             dp[i][w] = dp[i - 1][w]
             if weights[i - 1] <= w:
-                dp[i][w] = max(dp[i][w], dp[i - 1][w - weights[i - 1]] + values[i - 1])
+                dp[i][w] = max(dp[i][w], dp[i - 1]
+                               [w - weights[i - 1]] + values[i - 1])
 
     # Backtrack to find selected items
     selected: List[dict] = []
@@ -226,8 +229,8 @@ def sliding_window_sma(sessions: List[dict], window: int = 7) -> List[float]:
     Leading values use available data only.
     """
     durations = [s.get('duration_min', 0) for s in sessions]
-    n         = len(durations)
-    sma       = []
+    n = len(durations)
+    sma = []
     window_sum = 0.0
     deq: deque = deque()
 
@@ -260,13 +263,13 @@ def productivity_insights(sessions: List[dict]) -> dict:
             'avg_session': 0, 'trend': 'stable', 'suggestions': []
         }
 
-    durations  = [s.get('duration_min', 0) for s in sessions]
-    total_min  = sum(durations)
-    sma        = sliding_window_sma(sessions)
+    durations = [s.get('duration_min', 0) for s in sessions]
+    total_min = sum(durations)
+    sma = sliding_window_sma(sessions)
 
     # Trend: compare last-7 vs previous-7
     if len(sma) >= 14:
-        recent  = sum(sma[-7:]) / 7
+        recent = sum(sma[-7:]) / 7
         earlier = sum(sma[-14:-7]) / 7
         if recent > earlier * 1.10:
             trend = 'improving'
@@ -285,15 +288,20 @@ def productivity_insights(sessions: List[dict]) -> dict:
     suggestions = []
     avg = total_min / len(sessions) if sessions else 0
     if avg < 30:
-        suggestions.append('Try aiming for at least 30 min per session consistently.')
+        suggestions.append(
+            'Try aiming for at least 30 min per session consistently.')
     if trend == 'declining':
-        suggestions.append('Your sessions have been shorter lately. Try the Pomodoro technique!')
+        suggestions.append(
+            'Your sessions have been shorter lately. Try the Pomodoro technique!')
     if trend == 'improving':
-        suggestions.append('Great momentum! Keep the streak going with consistent daily sessions.')
+        suggestions.append(
+            'Great momentum! Keep the streak going with consistent daily sessions.')
     if len(sessions) > 0 and max(durations) > 240:
-        suggestions.append('Long sessions detected. Remember to take 10-min breaks every hour.')
+        suggestions.append(
+            'Long sessions detected. Remember to take 10-min breaks every hour.')
     if len(suggestions) == 0:
-        suggestions.append('You are on track! Review your hardest topics next session.')
+        suggestions.append(
+            'You are on track! Review your hardest topics next session.')
 
     return {
         'sma_7d':      sma,
@@ -334,7 +342,8 @@ def generate_schedule(
 
     # Step 1: Knapsack selection
     selected = knapsack_schedule(tasks, time_budget_hrs)
-    skipped  = [t for t in tasks if t.get('status') != 'completed' and t['id'] not in {s['id'] for s in selected}]
+    skipped = [t for t in tasks if t.get('status') != 'completed' and t['id'] not in {
+        s['id'] for s in selected}]
 
     # Step 2: Topological sort (dependency ordering)
     topo = topological_sort(selected, deps)
