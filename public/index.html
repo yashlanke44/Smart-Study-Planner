@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="AI-powered study planner using DSA algorithms — Priority Queues, DP, Topological Sort, Greedy scheduling.">
+  <title>Smart Study Planner — AI Powered MVVM</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+</head>
+<body>
+
+  <!-- ═════════════════════════════════════════════
+       DEVICE SELECTOR OVERLAY
+       ═════════════════════════════════════════════ -->
+  <div id="device-selector">
+    <div class="device-title">Smart Study Planner</div>
+    <div class="device-subtitle">Choose your preferred viewing experience for this session.</div>
+    <div class="device-options">
+      <!-- Mobile Option -->
+      <div class="device-option" data-device="mobile" onclick="selectDevice('mobile')">
+        <div class="device-option-inner">
+          <svg viewBox="0 0 64 64" stroke="currentColor" style="color: var(--accent-cyan);">
+            <rect x="16" y="4" width="32" height="56" rx="6" ry="6" stroke-width="1.5" fill="none">
+              <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="2s" fill="freeze"/>
+            </rect>
+            <line x1="28" y1="52" x2="36" y2="52" stroke-width="2" stroke-linecap="round">
+              <animate attributeName="opacity" values="0;1" dur="2s" fill="freeze"/>
+            </line>
+            <line x1="24" y1="12" x2="40" y2="12" stroke-width="1" opacity="0.4"/>
+          </svg>
+          <div class="device-option-label">Mobile View</div>
+          <div class="device-option-desc">Optimized for phones &amp; small screens</div>
+        </div>
+      </div>
+      <!-- Laptop Option -->
+      <div class="device-option" data-device="laptop" onclick="selectDevice('laptop')">
+        <div class="device-option-inner">
+          <svg viewBox="0 0 64 64" stroke="currentColor" style="color: var(--accent-primary);">
+            <rect x="6" y="8" width="52" height="36" rx="3" ry="3" stroke-width="1.5" fill="none">
+              <animate attributeName="stroke-dasharray" values="0,200;200,0" dur="2s" fill="freeze"/>
+            </rect>
+            <path d="M2 48 L62 48" stroke-width="2" stroke-linecap="round">
+              <animate attributeName="opacity" values="0;1" dur="2s" fill="freeze"/>
+            </path>
+            <path d="M22 44 L42 44 L46 48 L18 48 Z" stroke-width="1" opacity="0.3" fill="none"/>
+          </svg>
+          <div class="device-option-label">Laptop View</div>
+          <div class="device-option-desc">Full desktop experience with all panels</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function selectDevice(device) {
+      document.documentElement.setAttribute('data-device', device);
+      if (device === 'mobile') {
+        const vp = document.querySelector('meta[name="viewport"]');
+        vp.content = 'width=420, initial-scale=1.0';
+        document.body.classList.add('mobile-mode');
+      }
+      const sel = document.getElementById('device-selector');
+      sel.classList.add('fade-out');
+      setTimeout(() => sel.remove(), 600);
+      localStorage.setItem('ssp_device', device);
+    }
+    // Auto select if previously chosen
+    const savedDevice = localStorage.getItem('ssp_device');
+    if (savedDevice) selectDevice(savedDevice);
+  </script>
+
+  <!-- Global -->
+  <canvas id="particle-canvas"></canvas>
+  <div id="toast-container"></div>
+
+  <!-- ═════════════════════════════════════════════
+       NAVIGATION
+       ═════════════════════════════════════════════ -->
+  <nav id="main-nav" class="navbar hidden">
+    <div class="brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" style="filter: drop-shadow(0 0 6px var(--accent-primary));">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"><animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/></path>
+        <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+      Smart Planner
+    </div>
+    <div class="nav-links">
+      <a href="#" class="nav-link" data-navigate="dashboard" id="nav-dashboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-link" data-navigate="tasks" id="nav-tasks">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Tasks
+      </a>
+      <a href="#" class="nav-link" data-navigate="scheduler" id="nav-scheduler">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        AI Scheduler
+      </a>
+      <a href="#" class="nav-link" data-navigate="analytics" id="nav-analytics">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Analytics
+      </a>
+      <a href="#" class="nav-link" data-navigate="suggestions" id="nav-suggestions">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg>
+        Suggestions
+      </a>
+      <a href="#" class="nav-link" data-navigate="about" id="nav-about">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        DSA
+      </a>
+    </div>
+    <div class="user-menu">
+      <span id="nav-username" class="user-name"></span>
+      <button id="btn-logout" class="btn btn-secondary" style="padding:0.35rem 0.7rem;font-size:0.78rem;">Logout</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ═════════════════════════════════════════════
+         PAGE: LANDING
+         ═════════════════════════════════════════════ -->
+    <section id="page-landing" class="page active">
+      <div style="text-align:center; padding: clamp(2rem,8vw,6rem) 1rem;">
+        <!-- Animated Hero SVG -->
+        <div style="margin-bottom:2rem;" class="animate-float">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="filter: drop-shadow(0 0 20px rgba(129,140,248,0.4));">
+            <circle cx="40" cy="40" r="35" stroke="url(#heroGrad)" stroke-width="1.5" stroke-dasharray="4 4">
+              <animateTransform attributeName="transform" type="rotate" from="0 40 40" to="360 40 40" dur="30s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="40" cy="40" r="24" stroke="url(#heroGrad)" stroke-width="1" opacity="0.4">
+              <animateTransform attributeName="transform" type="rotate" from="360 40 40" to="0 40 40" dur="20s" repeatCount="indefinite"/>
+            </circle>
+            <path d="M40 22 L40 40 L54 40" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite"/>
+            </path>
+            <circle cx="40" cy="40" r="3" fill="var(--accent-cyan)">
+              <animate attributeName="r" values="2;4;2" dur="3s" repeatCount="indefinite"/>
+            </circle>
+            <defs><linearGradient id="heroGrad" x1="0" y1="0" x2="80" y2="80"><stop offset="0%" stop-color="var(--accent-primary)"/><stop offset="100%" stop-color="var(--accent-secondary)"/></linearGradient></defs>
+          </svg>
+        </div>
+
+        <h1 class="animate-fade-up" style="background: linear-gradient(135deg, #818cf8, #34d399, #22d3ee); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:1rem;">
+          Study Smarter,<br>Not Harder.
+        </h1>
+        <p class="animate-fade-up" style="--delay:0.1s; font-size:clamp(1rem,2vw,1.2rem); color:var(--text-secondary); max-width:560px; margin:0 auto 2.5rem;">
+          An intelligent planner powered by real algorithms — Heaps, Graphs, Dynamic Programming, and Greedy scheduling.
+        </p>
+        <div style="display:flex; gap:0.75rem; justify-content:center; flex-wrap:wrap;" class="animate-fade-up" style="--delay:0.2s;">
+          <button id="btn-get-started" class="btn btn-glow" style="font-size:1rem; padding:0.85rem 2rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+            Start Planning
+          </button>
+          <button id="btn-learn-more" class="btn btn-secondary" style="font-size:1rem; padding:0.85rem 2rem;">How It Works</button>
+        </div>
+
+        <div class="hero-stats" style="display:flex; gap:clamp(1.5rem,4vw,4rem); justify-content:center; margin-top:4rem;">
+          <div class="animate-pop-in stagger-1">
+            <div style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;color:var(--text-primary);"><span data-count="15000">0</span>+</div>
+            <div style="color:var(--text-muted);font-size:0.85rem;">Tasks Scheduled</div>
+          </div>
+          <div class="animate-pop-in stagger-2">
+            <div style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;color:var(--accent-primary);"><span data-count="5">0</span></div>
+            <div style="color:var(--text-muted);font-size:0.85rem;">DSA Algorithms</div>
+          </div>
+          <div class="animate-pop-in stagger-3">
+            <div style="font-size:clamp(1.8rem,4vw,2.5rem);font-weight:800;color:var(--accent-secondary);"><span data-count="100">0</span>%</div>
+            <div style="color:var(--text-muted);font-size:0.85rem;">Smarter Scheduling</div>
+          </div>
+        </div>
+
+        <!-- Animated Feature Cards -->
+        <div id="features-section" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:1.25rem; margin-top:5rem; max-width:900px; margin-left:auto; margin-right:auto;">
+          <div class="glass-effect animate-pop-in stagger-4" style="padding:1.5rem; text-align:left;">
+            <div class="neon-icon purple" style="margin-bottom:1rem;">
+              <svg viewBox="0 0 24 24" stroke="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/></polygon></svg>
+            </div>
+            <h3 style="margin-bottom:0.5rem;">AI Scheduling</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">5 different algorithms optimize your study plan.</p>
+          </div>
+          <div class="glass-effect animate-pop-in stagger-5" style="padding:1.5rem; text-align:left;">
+            <div class="neon-icon green" style="margin-bottom:1rem;">
+              <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"><animate attributeName="stroke-dashoffset" from="100" to="0" dur="2s" fill="freeze"/></path></svg>
+            </div>
+            <h3 style="margin-bottom:0.5rem;">Analytics</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">Sliding Window algorithms track your focus.</p>
+          </div>
+          <div class="glass-effect animate-pop-in stagger-6" style="padding:1.5rem; text-align:left;">
+            <div class="neon-icon cyan" style="margin-bottom:1rem;">
+              <svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"><animate attributeName="stroke-dashoffset" from="20" to="0" dur="1.5s" fill="freeze"/></path></svg>
+            </div>
+            <h3 style="margin-bottom:0.5rem;">Smart Tasks</h3>
+            <p style="font-size:0.85rem;color:var(--text-secondary);">O(1) HashMap lookups for instant task access.</p>
+          </div>
+        </div>
+
+        <!-- Glowing Divider -->
+        <div class="glow-divider" style="max-width:900px;margin:3rem auto;"></div>
+
+        <!-- Study Modules Section -->
+        <div style="max-width:1000px; margin:0 auto; text-align:left;">
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.5rem;">
+            <span class="floating-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              Study Modules
+            </span>
+          </div>
+          <h2 style="font-size:clamp(1.3rem,3vw,2rem);margin-bottom:0.5rem;">Browse Subjects</h2>
+          <p style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:1.5rem;max-width:600px;">Pre-built study modules for popular CS subjects. Each module uses optimized scheduling.</p>
+
+          <div class="study-modules-grid">
+            <!-- Module 1: DSA -->
+            <div class="study-module animate-pop-in stagger-1" style="--module-color: var(--accent-primary); --module-color-rgb: var(--accent-primary-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon purple">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5z"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/></path><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                </div>
+                <div class="study-module-title">Data Structures & Algorithms</div>
+                <div class="study-module-desc">Arrays, Trees, Graphs, DP, Greedy — 150+ problems mapped.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-primary-rgb),0.1);color:var(--accent-primary);">12 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:65%;background:var(--accent-primary);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 2: OS -->
+            <div class="study-module animate-pop-in stagger-2" style="--module-color: var(--accent-cyan); --module-color-rgb: var(--accent-cyan-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon cyan">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                </div>
+                <div class="study-module-title">Operating Systems</div>
+                <div class="study-module-desc">Process scheduling, memory management, deadlocks & I/O.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-cyan-rgb),0.1);color:var(--accent-cyan);">8 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:40%;background:var(--accent-cyan);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 3: DBMS -->
+            <div class="study-module animate-pop-in stagger-3" style="--module-color: var(--accent-secondary); --module-color-rgb: var(--accent-secondary-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon green">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+                <div class="study-module-title">Database Management</div>
+                <div class="study-module-desc">SQL, normalization, transactions, B+ trees & indexing.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-secondary-rgb),0.1);color:var(--accent-secondary);">9 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:30%;background:var(--accent-secondary);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 4: Networks -->
+            <div class="study-module animate-pop-in stagger-4" style="--module-color: var(--accent-warning); --module-color-rgb: var(--accent-warning-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon yellow">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14"><animate attributeName="opacity" values="0.5;1;0.5" dur="3s" repeatCount="indefinite"/></path></svg>
+                </div>
+                <div class="study-module-title">Computer Networks</div>
+                <div class="study-module-desc">OSI/TCP-IP layers, routing algorithms, DNS, HTTP/2.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-warning-rgb),0.1);color:var(--accent-warning);">7 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:20%;background:var(--accent-warning);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 5: Maths -->
+            <div class="study-module animate-pop-in stagger-5" style="--module-color: var(--accent-pink); --module-color-rgb: var(--accent-pink-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon pink">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"><animate attributeName="r" values="2;3;2" dur="4s" repeatCount="indefinite"/></circle></svg>
+                </div>
+                <div class="study-module-title">Discrete Mathematics</div>
+                <div class="study-module-desc">Set theory, combinatorics, graph theory, probability.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-pink-rgb),0.1);color:var(--accent-pink);">6 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:55%;background:var(--accent-pink);"></div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Module 6: Web Dev -->
+            <div class="study-module animate-pop-in stagger-6" style="--module-color: var(--accent-danger); --module-color-rgb: var(--accent-danger-rgb);">
+              <div class="study-module-inner">
+                <div class="study-module-icon neon-icon red">
+                  <svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"><animate attributeName="opacity" values="0.6;1;0.6" dur="2.5s" repeatCount="indefinite"/></polyline></svg>
+                </div>
+                <div class="study-module-title">Web Development</div>
+                <div class="study-module-desc">HTML/CSS, JavaScript, React, Node, REST APIs.</div>
+                <div class="study-module-meta">
+                  <span class="study-module-badge" style="background:rgba(var(--accent-danger-rgb),0.1);color:var(--accent-danger);">10 Units</span>
+                  <div class="study-module-progress"><div class="study-module-progress-fill" style="width:75%;background:var(--accent-danger);"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature Highlight Row -->
+        <div class="glow-divider" style="max-width:900px;margin:3rem auto;"></div>
+
+        <div style="max-width:1000px;margin:0 auto;">
+          <div class="feature-row">
+            <div class="feature-visual">
+              <div class="orbit-container">
+                <div class="orbit-ring"><div class="orbit-dot"></div></div>
+                <div class="orbit-ring"></div>
+                <svg class="orbit-center" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.5" style="color:var(--accent-primary);">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+                </svg>
+              </div>
+            </div>
+            <div class="feature-text">
+              <span class="floating-badge" style="margin-bottom:0.75rem;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                MVVM Architecture
+              </span>
+              <h3>Built with Production-Grade Patterns</h3>
+              <p>Clean separation of concerns using Model-View-ViewModel. Your data models are pure computation layers with zero UI coupling. ViewModels stream state changes to reactive Views.</p>
+            </div>
+          </div>
+
+          <div class="feature-row reversed">
+            <div class="feature-visual" style="background:rgba(var(--accent-secondary-rgb),0.03);">
+              <svg width="120" height="120" viewBox="0 0 120 120" fill="none">
+                <rect x="10" y="30" width="25" height="60" rx="4" stroke="var(--accent-primary)" stroke-width="1" opacity="0.3"/>
+                <rect x="10" y="50" width="25" height="40" rx="4" fill="rgba(129,140,248,0.2)">
+                  <animate attributeName="y" values="50;30;50" dur="4s" repeatCount="indefinite"/>
+                  <animate attributeName="height" values="40;60;40" dur="4s" repeatCount="indefinite"/>
+                </rect>
+                <rect x="45" y="30" width="25" height="60" rx="4" stroke="var(--accent-secondary)" stroke-width="1" opacity="0.3"/>
+                <rect x="45" y="40" width="25" height="50" rx="4" fill="rgba(52,211,153,0.2)">
+                  <animate attributeName="y" values="40;25;40" dur="3s" repeatCount="indefinite"/>
+                  <animate attributeName="height" values="50;65;50" dur="3s" repeatCount="indefinite"/>
+                </rect>
+                <rect x="80" y="30" width="25" height="60" rx="4" stroke="var(--accent-cyan)" stroke-width="1" opacity="0.3"/>
+                <rect x="80" y="55" width="25" height="35" rx="4" fill="rgba(34,211,238,0.2)">
+                  <animate attributeName="y" values="55;35;55" dur="5s" repeatCount="indefinite"/>
+                  <animate attributeName="height" values="35;55;35" dur="5s" repeatCount="indefinite"/>
+                </rect>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <span class="floating-badge" style="margin-bottom:0.75rem;background:rgba(var(--accent-secondary-rgb),0.08);color:var(--accent-secondary);border-color:rgba(var(--accent-secondary-rgb),0.15);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+                Real-Time Analytics
+              </span>
+              <h3>Track Your Progress Over Time</h3>
+              <p>Sliding window algorithms compute moving averages of your study sessions. Canvas-rendered charts visualize daily focus hours, subject distribution, and 28-day heatmaps.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: AUTH
+         ═════════════════════════════════════════════ -->
+    <section id="page-auth" class="page auth-layout">
+      <div class="auth-box">
+        <div class="auth-logo">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.5" style="filter:drop-shadow(0 0 12px var(--accent-primary));">
+            <path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z">
+              <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/>
+            </path>
+            <line x1="9" y1="21" x2="15" y2="21" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h2 id="auth-title" style="text-align:center;font-size:1.5rem;">Welcome Back</h2>
+        <p id="auth-subtitle" style="text-align:center;color:var(--text-secondary);margin-bottom:1.5rem;font-size:0.9rem;">Sign in to your study planner</p>
+        <div id="auth-error" class="hidden" style="background:rgba(var(--accent-danger-rgb),0.08);color:var(--accent-danger);padding:0.75rem;border-radius:var(--radius-sm);margin-bottom:1rem;border:1px solid rgba(var(--accent-danger-rgb),0.2);text-align:center;font-size:0.85rem;"></div>
+        <form id="auth-form">
+          <div class="form-group hidden" id="signup-name-group">
+            <label>Full Name</label>
+            <input type="text" id="auth-name" class="form-input" placeholder="Your name">
+          </div>
+          <div class="form-group"><label>Email</label><input type="email" id="auth-email" class="form-input" placeholder="you@example.com" required></div>
+          <div class="form-group"><label>Password</label><input type="password" id="auth-password" class="form-input" placeholder="••••••••" required></div>
+          <button id="auth-submit" type="submit" class="btn btn-primary" style="width:100%;margin-top:0.75rem;padding:0.85rem;">Sign In</button>
+        </form>
+        <div style="text-align:center;margin-top:1.5rem;font-size:0.85rem;">
+          <span id="auth-switch-text" style="color:var(--text-secondary);">Don't have an account?</span>
+          <button id="auth-toggle" style="background:none;border:none;color:var(--accent-primary);font-weight:600;cursor:pointer;font-size:0.85rem;margin-left:0.4rem;">Sign Up</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: DASHBOARD
+         ═════════════════════════════════════════════ -->
+    <section id="page-dashboard" class="page">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="margin-bottom:0.15rem;">Welcome, <span id="dashboard-name" style="color:var(--accent-primary);"></span></h1>
+          <p id="dashboard-date" style="color:var(--text-secondary);font-size:0.9rem;"></p>
+        </div>
+        <button class="btn btn-glow" onclick="App.navigate('scheduler')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Auto-Schedule
+        </button>
+      </div>
+
+      <div class="dashboard-grid" style="margin-top:1.5rem;">
+        <div class="stat-card animate-pop-in stagger-1">
+          <div class="stat-icon neon-icon purple">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="stat-info"><span class="stat-label">Total Tasks</span><span class="stat-value" id="stat-total-tasks">0</span></div>
+        </div>
+        <div class="stat-card animate-pop-in stagger-2">
+          <div class="stat-icon neon-icon green">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="stat-info"><span class="stat-label">Completed</span><span class="stat-value" id="stat-completed">0</span></div>
+        </div>
+        <div class="stat-card animate-pop-in stagger-3">
+          <div class="stat-icon neon-icon red">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div class="stat-info"><span class="stat-label">Overdue</span><span class="stat-value" id="stat-overdue">0</span></div>
+        </div>
+        <div class="stat-card animate-pop-in stagger-4">
+          <div class="stat-icon neon-icon yellow">
+            <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          </div>
+          <div class="stat-info"><span class="stat-label">Day Streak</span><span class="stat-value" id="stat-streak">0</span></div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+        <div class="panel animate-pop-in stagger-5">
+          <div class="panel-header"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-cyan));"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Today's AI Schedule</div>
+            <button class="btn btn-secondary" style="padding:0.3rem 0.6rem;font-size:0.75rem;" onclick="App.navigate('scheduler')">Modify</button>
+          </div>
+          <div id="today-schedule"></div>
+        </div>
+        <div class="panel animate-pop-in stagger-6">
+          <div class="panel-header"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-danger)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-danger));"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Upcoming</div></div>
+          <div id="upcoming-tasks-list"></div>
+        </div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="panel animate-pop-in stagger-7">
+          <div class="panel-header"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-primary));"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+            Weekly Productivity</div></div>
+          <canvas id="dashboard-chart"></canvas>
+        </div>
+        <div class="panel animate-pop-in stagger-8">
+          <div class="panel-header"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-secondary));"><path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z"/></svg>
+            Smart Tips</div></div>
+          <div id="quick-suggestions"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: TASKS
+         ═════════════════════════════════════════════ -->
+    <section id="page-tasks" class="page">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <h1 style="margin-bottom:0.15rem;">Task Database</h1>
+          <p style="color:var(--text-muted);font-size:0.85rem;">O(1) lookups powered by Hash Map storage</p>
+        </div>
+        <button id="btn-add-task" class="btn btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </button>
+      </div>
+      <div class="task-controls">
+        <div class="filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="pending">Pending</button>
+          <button class="filter-btn" data-filter="completed">Done</button>
+          <button class="filter-btn" data-filter="overdue">Overdue</button>
+        </div>
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+          <span style="color:var(--text-muted);font-size:0.8rem;">Sort:</span>
+          <select id="sort-tasks" class="form-input" style="padding:0.35rem 0.7rem;font-size:0.82rem;">
+            <option value="deadline">Deadline</option>
+            <option value="priority">Priority</option>
+            <option value="name">Name</option>
+            <option value="created">Recent</option>
+          </select>
+        </div>
+      </div>
+      <div id="tasks-list" class="task-list-container"></div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: SCHEDULER
+         ═════════════════════════════════════════════ -->
+    <section id="page-scheduler" class="page">
+      <h1>AI Study Scheduler</h1>
+      <p style="color:var(--text-muted);font-size:0.9rem;">Allocate study time optimally using DSA algorithms.</p>
+      <div class="algo-container">
+        <div class="panel glass-effect">
+          <div class="panel-header"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Parameters</div></div>
+          <div class="form-group"><label>Study Hours</label><input type="number" id="schedule-hours" class="form-input" value="4" min="0.5" step="0.5"></div>
+          <div class="form-group"><label>Start Time</label><input type="time" id="schedule-start" class="form-input" value="17:00"></div>
+          <div class="form-group"><label>Break (min)</label><input type="number" id="schedule-break" class="form-input" value="10" min="0" step="5"></div>
+          <div class="form-group"><label>Algorithm</label>
+            <select id="schedule-algo" class="form-input">
+              <optgroup label="Optimal"><option value="dp">DP Knapsack</option><option value="priority-queue">Priority Queue (Heap)</option></optgroup>
+              <optgroup label="Fast"><option value="topological">Topological Sort</option><option value="greedy">Greedy (EDF)</option></optgroup>
+            </select>
+          </div>
+          <button id="btn-generate-schedule" class="btn btn-glow" style="width:100%;margin-top:0.75rem;">Generate Schedule</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+          <div id="algo-visualization" class="panel hidden">
+            <div class="panel-header"><div class="panel-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-cyan));animation:neonPulse 2s infinite;"><path d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a2 2 0 01-2 2h-4a2 2 0 01-2-2v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z"/></svg>
+              <span id="algo-name-label" style="color:var(--accent-primary);"></span></div></div>
+            <div class="progress-bar"><div id="algo-progress-fill" class="progress-fill"></div></div>
+            <div style="text-align:right;font-size:0.75rem;color:var(--text-muted);margin-bottom:0.75rem;font-family:var(--font-mono);" id="algo-progress-text">0%</div>
+            <div id="algo-steps" class="algo-steps"></div>
+          </div>
+          <div id="schedule-result" class="panel hidden">
+            <div class="panel-header"><div class="panel-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-secondary));"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+              Timeline</div></div>
+            <div id="schedule-timeline"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: ANALYTICS
+         ═════════════════════════════════════════════ -->
+    <section id="page-analytics" class="page">
+      <h1>Performance Analytics</h1>
+      <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.5rem;">Insights powered by Sliding Window moving averages.</p>
+      <div class="dashboard-grid" style="margin-bottom:1.5rem;">
+        <div class="stat-card"><div class="stat-info"><span class="stat-label">Completion</span><div style="display:flex;align-items:baseline;gap:0.75rem;"><span class="stat-value" id="analytics-completion-rate">0%</span><span id="analytics-completion-trend" style="font-size:0.8rem;font-weight:600;"></span></div></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-label">Avg Session</span><div style="display:flex;align-items:baseline;gap:0.75rem;"><span class="stat-value" id="analytics-avg-time">0h</span><span id="analytics-time-trend" style="font-size:0.8rem;font-weight:600;"></span></div></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-label">Score</span><div style="display:flex;align-items:baseline;gap:0.75rem;"><span class="stat-value" id="analytics-productivity-score">0</span><span id="analytics-score-trend" style="font-size:0.8rem;font-weight:600;"></span></div></div></div>
+        <div class="stat-card"><div class="stat-info"><span class="stat-label">Best Streak</span><span class="stat-value" id="analytics-best-streak" style="color:var(--accent-warning);">0</span></div></div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="panel"><div class="panel-header"><div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Focus Trend (SMA)</div></div><canvas id="focus-chart"></canvas></div>
+        <div class="panel"><div class="panel-header"><div class="panel-title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-pink)" stroke-width="2"><path d="M21.21 15.89A10 10 0 118 2.83"/><path d="M22 12A10 10 0 0012 2v10z"/></svg>
+          Subject Distribution</div></div><div style="display:flex;justify-content:center;"><canvas id="distribution-chart"></canvas></div></div>
+      </div>
+      <div class="panel" style="margin-top:1.25rem;"><div class="panel-header"><div class="panel-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-warning)" stroke-width="2" style="filter:drop-shadow(0 0 4px var(--accent-warning));"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        28-Day Heatmap</div></div><div id="heatmap-container"></div></div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: SUGGESTIONS
+         ═════════════════════════════════════════════ -->
+    <section id="page-suggestions" class="page">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+        <div><h1>AI Suggestions</h1><p style="color:var(--text-muted);font-size:0.85rem;">Auto-generated insights from behavior analysis.</p></div>
+        <button id="btn-refresh-suggestions" class="btn btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+          Refresh
+        </button>
+      </div>
+      <div id="suggestions-list" style="max-width:800px;margin-top:1.5rem;"></div>
+    </section>
+
+    <!-- ═════════════════════════════════════════════
+         PAGE: ABOUT / DSA
+         ═════════════════════════════════════════════ -->
+    <section id="page-about" class="page">
+      <h1>
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="1.5" style="vertical-align:middle;margin-right:0.5rem;filter:drop-shadow(0 0 8px var(--accent-primary));"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Data Structures &amp; Algorithms
+      </h1>
+      <p style="color:var(--text-secondary);max-width:700px;margin-bottom:1.5rem;font-size:0.9rem;">Every feature is backed by a real CS algorithm. No fake AI — just efficient data structures.</p>
+      <div class="dashboard-grid" style="grid-template-columns:2fr 1fr;margin-bottom:1.5rem;">
+        <div class="panel" style="background:rgba(0,0,0,0.4);">
+          <div class="panel-header" style="margin-bottom:0;"><div class="panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+            Live Algorithm</div></div>
+          <pre style="margin:0;padding:1.25rem;color:var(--accent-primary);font-family:var(--font-mono);font-size:0.85rem;height:200px;overflow:hidden;line-height:1.5;" id="typing-code"></pre>
+        </div>
+        <div class="panel" style="justify-content:center;align-items:center;text-align:center;">
+          <div style="font-size:3rem;font-weight:900;color:var(--accent-secondary);line-height:1;margin-bottom:0.5rem;text-shadow:0 0 20px rgba(var(--accent-secondary-rgb),0.3);">O(1)</div>
+          <p style="color:var(--text-muted);font-size:0.85rem;">Avg Task Lookup via Hash Map</p>
+        </div>
+      </div>
+      <div id="dsa-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;"></div>
+    </section>
+  </main>
+
+  <!-- ═════════════════════════════════════════════
+       TASK MODAL
+       ═════════════════════════════════════════════ -->
+  <div id="task-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="task-modal-title" style="font-size:1.25rem;">Add Task</h2>
+        <button id="task-modal-close" class="modal-close">&times;</button>
+      </div>
+      <form id="task-form">
+        <input type="hidden" id="task-edit-id">
+        <div class="form-group"><label>Task Name</label><input type="text" id="task-name" class="form-input" required placeholder="e.g. Binary Trees"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <div class="form-group"><label>Subject</label><input type="text" id="task-subject" class="form-input" placeholder="DSA"></div>
+          <div class="form-group"><label>Deadline</label><input type="datetime-local" id="task-deadline" class="form-input" required></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;">
+          <div class="form-group"><label>Priority</label><select id="task-priority" class="form-input"><option value="1">Critical</option><option value="2">High</option><option value="3" selected>Medium</option><option value="4">Low</option></select></div>
+          <div class="form-group"><label>Hours</label><input type="number" id="task-duration" class="form-input" min="0.5" step="0.5" value="1" required></div>
+          <div class="form-group"><label>Difficulty</label><select id="task-difficulty" class="form-input"><option value="easy">Easy</option><option value="medium" selected>Medium</option><option value="hard">Hard</option></select></div>
+        </div>
+        <div class="form-group"><label>Prerequisites</label><input type="text" id="task-prereqs" class="form-input" placeholder="Comma separated"><small style="color:var(--text-muted);font-size:0.7rem;">Used by Topological Sort</small></div>
+        <div class="form-group"><label>Notes</label><textarea id="task-notes" class="form-input" rows="2" placeholder="Optional notes..."></textarea></div>
+        <button id="task-submit" type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Save Task</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts: MVVM Order -->
+  <script src="js/models/UserModel.js"></script>
+  <script src="js/models/TaskModel.js"></script>
+  <script src="js/models/SessionModel.js"></script>
+  <script src="js/models/SchedulerModel.js"></script>
+  <script src="js/views/AuthView.js"></script>
+  <script src="js/views/TaskView.js"></script>
+  <script src="js/views/DashboardView.js"></script>
+  <script src="js/views/SchedulerView.js"></script>
+  <script src="js/views/AnalyticsView.js"></script>
+  <script src="js/views/SuggestionsView.js"></script>
+  <script src="js/views/AboutView.js"></script>
+  <script src="js/viewmodels/AuthViewModel.js"></script>
+  <script src="js/viewmodels/TaskViewModel.js"></script>
+  <script src="js/viewmodels/DashboardViewModel.js"></script>
+  <script src="js/viewmodels/SchedulerViewModel.js"></script>
+  <script src="js/viewmodels/AnalyticsViewModel.js"></script>
+  <script src="js/viewmodels/SuggestionsViewModel.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
