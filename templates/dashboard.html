@@ -1,0 +1,586 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Smart Study Planner{% endblock %}
+
+{% block content %}
+<div id="app-shell">
+
+  <!-- ── Sidebar ─────────────────────────────────────────── -->
+  <aside id="sidebar" class="sidebar glass-effect">
+    <div class="sidebar-logo">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#sg)" stroke-width="1.5">
+        <defs>
+          <linearGradient id="sg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#818cf8"/><stop offset="100%" style="stop-color:#22d3ee"/>
+          </linearGradient>
+        </defs>
+        <path d="M12 2L2 7l10 5 10-5-10-5z"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="20s" repeatCount="indefinite"/></path>
+        <path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+      </svg>
+      <span class="logo-text">StudyAI<span style="color:var(--accent-secondary)">.py</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="dashboard" onclick="switchView('dashboard')">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" data-view="tasks" onclick="switchView('tasks')">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Tasks
+      </button>
+      <button class="nav-item" data-view="scheduler" onclick="switchView('scheduler')">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        AI Scheduler
+      </button>
+      <button class="nav-item" data-view="analytics" onclick="switchView('analytics')">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Analytics
+      </button>
+      <button class="nav-item" data-view="about" onclick="switchView('about')">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+        DSA Engine
+      </button>
+    </nav>
+
+    <div class="sidebar-user" id="sidebar-user">
+      <div class="user-avatar" id="user-avatar">Y</div>
+      <div class="user-info">
+        <div class="user-name" id="user-name">Loading…</div>
+        <div class="user-email" id="user-email"></div>
+      </div>
+      <button class="btn-icon" title="Logout" onclick="handleLogout()">
+        <svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Content ────────────────────────────────────── -->
+  <main id="main-content">
+
+    <!-- ════════ DASHBOARD VIEW ════════ -->
+    <div id="view-dashboard" class="view active">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Dashboard</h2>
+          <p class="view-subtitle">Your study overview for today</p>
+        </div>
+        <button class="btn-primary" onclick="showAddTaskModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Task
+        </button>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card glass-effect">
+          <div class="stat-card-icon neon-icon purple"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+          <div class="stat-card-body">
+            <div class="stat-card-num" id="stat-total">—</div>
+            <div class="stat-card-label">Total Tasks</div>
+          </div>
+        </div>
+        <div class="stat-card glass-effect">
+          <div class="stat-card-icon neon-icon green"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div class="stat-card-body">
+            <div class="stat-card-num" id="stat-completed" style="color:var(--accent-secondary)">—</div>
+            <div class="stat-card-label">Completed</div>
+          </div>
+        </div>
+        <div class="stat-card glass-effect">
+          <div class="stat-card-icon neon-icon yellow"><svg viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="stat-card-body">
+            <div class="stat-card-num" id="stat-pending" style="color:var(--accent-warning)">—</div>
+            <div class="stat-card-label">Pending</div>
+          </div>
+        </div>
+        <div class="stat-card glass-effect">
+          <div class="stat-card-icon neon-icon cyan"><svg viewBox="0 0 24 24" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+          <div class="stat-card-body">
+            <div class="stat-card-num" id="stat-rate" style="color:var(--accent-cyan)">—%</div>
+            <div class="stat-card-label">Completion Rate</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Urgent Tasks -->
+      <div class="section-card glass-effect" style="margin-top:1.5rem;">
+        <div class="section-card-header">
+          <h3>⚡ Urgent Tasks (Min-Heap sorted)</h3>
+          <span class="badge-muted" id="heap-algo-label">heapq · Python</span>
+        </div>
+        <div id="urgent-tasks-list" class="task-list"></div>
+      </div>
+    </div>
+
+    <!-- ════════ TASKS VIEW ════════ -->
+    <div id="view-tasks" class="view">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Task Manager</h2>
+          <p class="view-subtitle">All your study tasks — O(1) SQLite lookups</p>
+        </div>
+        <button class="btn-primary" onclick="showAddTaskModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Task
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-row">
+        <select id="filter-status" onchange="loadTasks()" class="select-input">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="in-progress">In Progress</option>
+          <option value="completed">Completed</option>
+        </select>
+        <select id="filter-subject" onchange="loadTasks()" class="select-input">
+          <option value="">All Subjects</option>
+          <option value="DSA">DSA</option>
+          <option value="OS">Operating Systems</option>
+          <option value="DBMS">Database Management</option>
+          <option value="Networks">Networks</option>
+          <option value="Mathematics">Mathematics</option>
+          <option value="Web Dev">Web Dev</option>
+          <option value="Other">Other</option>
+        </select>
+        <select id="filter-sort" onchange="loadTasks()" class="select-input">
+          <option value="created">Newest First</option>
+          <option value="urgency">By Urgency (Heap)</option>
+          <option value="deadline">By Deadline (EDF)</option>
+        </select>
+      </div>
+
+      <div id="tasks-list" class="task-list" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- ════════ SCHEDULER VIEW ════════ -->
+    <div id="view-scheduler" class="view">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">AI Scheduler</h2>
+          <p class="view-subtitle">Python DSA pipeline: Knapsack → Topo Sort → EDF → Min-Heap</p>
+        </div>
+        <button class="btn-primary" onclick="runScheduler()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Generate Schedule
+        </button>
+      </div>
+
+      <div class="scheduler-config glass-effect">
+        <h3 style="margin-bottom:1rem;">⚙️ Schedule Parameters</h3>
+        <div class="config-row">
+          <div class="form-group">
+            <label>Time Budget (hours)</label>
+            <input type="number" id="sched-budget" value="8" min="1" max="16" step="0.5" class="form-input"/>
+          </div>
+          <div class="form-group">
+            <label>Algorithm Priority</label>
+            <select id="sched-algo" class="select-input">
+              <option value="full">Full Pipeline (All 4 algorithms)</option>
+              <option value="heap">Min-Heap Only</option>
+              <option value="edf">EDF (Greedy) Only</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="schedule-result" style="margin-top:1.5rem;">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <p>Click "Generate Schedule" to run the Python DSA pipeline</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ ANALYTICS VIEW ════════ -->
+    <div id="view-analytics" class="view">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Analytics</h2>
+          <p class="view-subtitle">Sliding Window SMA — 7-day productivity trends</p>
+        </div>
+        <button class="btn-ghost" onclick="loadAnalytics()">Refresh</button>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="glass-effect analytics-card">
+          <div class="analytics-label">Total Study Hours</div>
+          <div class="analytics-value accent-primary" id="an-hours">—</div>
+          <div class="analytics-sub">All sessions combined</div>
+        </div>
+        <div class="glass-effect analytics-card">
+          <div class="analytics-label">Avg Session</div>
+          <div class="analytics-value accent-cyan" id="an-avg">—</div>
+          <div class="analytics-sub">Minutes per session</div>
+        </div>
+        <div class="glass-effect analytics-card">
+          <div class="analytics-label">Trend (7-day SMA)</div>
+          <div class="analytics-value" id="an-trend">—</div>
+          <div class="analytics-sub">Sliding Window analysis</div>
+        </div>
+        <div class="glass-effect analytics-card">
+          <div class="analytics-label">Best Study Day</div>
+          <div class="analytics-value accent-secondary" id="an-best">—</div>
+          <div class="analytics-sub">Highest session recorded</div>
+        </div>
+      </div>
+
+      <div class="glass-effect" style="margin-top:1.5rem;padding:1.5rem;border-radius:var(--radius-lg);">
+        <h3 style="margin-bottom:1rem;">📈 Study Session Chart</h3>
+        <canvas id="analytics-chart" height="80"></canvas>
+      </div>
+
+      <div class="glass-effect" style="margin-top:1.5rem;padding:1.5rem;border-radius:var(--radius-lg);">
+        <h3 style="margin-bottom:1rem;">💡 AI Suggestions</h3>
+        <div id="suggestions-list"></div>
+      </div>
+
+      <!-- Log Session -->
+      <div class="glass-effect" style="margin-top:1.5rem;padding:1.5rem;border-radius:var(--radius-lg);">
+        <h3 style="margin-bottom:1rem;">➕ Log Study Session</h3>
+        <div class="config-row">
+          <div class="form-group">
+            <label>Duration (minutes)</label>
+            <input type="number" id="session-duration" value="60" min="5" max="480" class="form-input"/>
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <select id="session-subject" class="select-input">
+              <option>DSA</option><option>OS</option><option>DBMS</option>
+              <option>Networks</option><option>Mathematics</option><option>Web Dev</option><option>General</option>
+            </select>
+          </div>
+          <div class="form-group" style="justify-content:flex-end;align-items:flex-end;display:flex;">
+            <button class="btn-primary" onclick="logSession()">Log Session</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════ DSA ENGINE VIEW ════════ -->
+    <div id="view-about" class="view">
+      <div class="view-header">
+        <div>
+          <h2 class="view-title">Python DSA Engine</h2>
+          <p class="view-subtitle">All 6 algorithms implemented in pure Python — models/scheduler.py</p>
+        </div>
+      </div>
+
+      <div class="dsa-grid">
+        {% set algos = [
+          ('Min-Heap', 'O(log n)', 'Priority Queue', 'Python heapq module. Urgency-weighted task extraction via negated score. O(log n) push/pop.', 'purple'),
+          ('Topological Sort', 'O(V+E)', "Kahn's BFS", 'collections.deque BFS. In-degree tracking. Cycle detection via output-length guard.', 'cyan'),
+          ('Greedy EDF', 'O(n log n)', 'Earliest Deadline First', 'datetime.fromisoformat parsing. Python sorted() with key=deadline. Null deadlines appended last.', 'green'),
+          ('DP Knapsack', 'O(n×W)', '0/1 Knapsack', '2D Python list DP table. Tenth-hour integer precision. Backtracking for selected item recovery.', 'yellow'),
+          ('Binary Search', 'O(log n)', 'Slot Allocation', 'Classic lo/hi/mid binary search over sorted slot list. Returns index of first fit.', 'pink'),
+          ('Sliding Window SMA', 'O(n)', 'Productivity Analytics', 'collections.deque sliding window. 7-day moving average with trend detection (improving/stable/declining).', 'red'),
+        ] %}
+        {% for algo, complexity, type_, desc, color_class in algos %}
+        <div class="dsa-card glass-effect animate-pop-in stagger-{{ loop.index }}">
+          <div class="dsa-card-header">
+            <span class="dsa-badge neon-icon {{ color_class }}">{{ complexity }}</span>
+            <span class="dsa-type">{{ type_ }}</span>
+          </div>
+          <h4 class="dsa-name">{{ algo }}</h4>
+          <p class="dsa-desc">{{ desc }}</p>
+          <div class="dsa-lang-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 20l4-16"/></svg>
+            Python · models/scheduler.py
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── Add Task Modal ─────────────────────────────────── -->
+<div id="add-task-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-card glass-effect animate-pop-in" style="max-width:520px;">
+    <button class="modal-close" onclick="closeTaskModal()">&times;</button>
+    <div class="modal-header">
+      <h2>New Task</h2>
+      <p>Add a study task to your planner</p>
+    </div>
+    <form id="task-form" onsubmit="handleAddTask(event)">
+      <div class="form-group"><label>Title *</label><input type="text" id="task-title" class="form-input" placeholder="e.g. Practice Graph BFS" required/></div>
+      <div class="form-group"><label>Description</label><textarea id="task-desc" class="form-input" rows="2" placeholder="Optional details…"></textarea></div>
+      <div class="config-row">
+        <div class="form-group">
+          <label>Subject</label>
+          <select id="task-subject" class="select-input">
+            <option>DSA</option><option>OS</option><option>DBMS</option><option>Networks</option><option>Mathematics</option><option>Web Dev</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="task-priority" class="select-input">
+            <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="critical">Critical</option>
+          </select>
+        </div>
+      </div>
+      <div class="config-row">
+        <div class="form-group"><label>Deadline</label><input type="datetime-local" id="task-deadline" class="form-input"/></div>
+        <div class="form-group"><label>Duration (hrs)</label><input type="number" id="task-duration" class="form-input" value="1" min="0.5" max="12" step="0.5"/></div>
+      </div>
+      <div class="form-group"><label>Tags <span style="color:var(--text-muted);font-size:0.75rem;">(comma separated)</span></label><input type="text" id="task-tags" class="form-input" placeholder="graphs, dynamic-programming"/></div>
+      <div id="task-error" class="form-error" style="display:none;"></div>
+      <button type="submit" class="btn-primary btn-full" id="task-submit-btn"><span class="btn-text">Add Task</span></button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ═══════════════════════════════════════════════════
+   Dashboard JavaScript — ViewModel Layer
+   Calls Python Flask API endpoints
+   ═══════════════════════════════════════════════════ */
+
+let currentUser = null;
+
+/* ── Init ──────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadCurrentUser();
+  await loadDashboard();
+  initBackground();
+});
+
+/* ── View Switching ────────────────────────────────── */
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('view-' + view).classList.add('active');
+  document.querySelector(`[data-view="${view}"]`).classList.add('active');
+  if (view === 'tasks')     loadTasks();
+  if (view === 'analytics') loadAnalytics();
+  if (view === 'dashboard') loadDashboard();
+}
+
+/* ── Current User ──────────────────────────────────── */
+async function loadCurrentUser() {
+  try {
+    const res = await fetch('/api/auth/me');
+    if (!res.ok) { window.location.href = '/'; return; }
+    const data = await res.json();
+    currentUser = data.user;
+    document.getElementById('user-name').textContent  = currentUser.name;
+    document.getElementById('user-email').textContent = currentUser.email;
+    document.getElementById('user-avatar').textContent = currentUser.name[0].toUpperCase();
+  } catch { window.location.href = '/'; }
+}
+
+/* ── Dashboard Data ────────────────────────────────── */
+async function loadDashboard() {
+  const res  = await fetch('/api/dashboard');
+  if (!res.ok) return;
+  const data = await res.json();
+  document.getElementById('stat-total').textContent     = data.stats.total;
+  document.getElementById('stat-completed').textContent = data.stats.completed;
+  document.getElementById('stat-pending').textContent   = data.stats.pending;
+  document.getElementById('stat-rate').textContent      = data.stats.completion + '%';
+  renderUrgentTasks(data.urgent_tasks);
+}
+
+function renderUrgentTasks(tasks) {
+  const el = document.getElementById('urgent-tasks-list');
+  if (!tasks.length) { el.innerHTML = '<div class="empty-state"><p>No pending tasks. Add some to get started!</p></div>'; return; }
+  el.innerHTML = tasks.map(t => renderTaskCard(t)).join('');
+}
+
+/* ── Tasks ─────────────────────────────────────────── */
+async function loadTasks() {
+  const status  = document.getElementById('filter-status').value;
+  const subject = document.getElementById('filter-subject').value;
+  const sort    = document.getElementById('filter-sort').value;
+  const params  = new URLSearchParams();
+  if (status)  params.set('status',  status);
+  if (subject) params.set('subject', subject);
+  if (sort)    params.set('sort',    sort);
+  const res  = await fetch('/api/tasks?' + params);
+  const data = await res.json();
+  const el   = document.getElementById('tasks-list');
+  if (!data.tasks.length) { el.innerHTML = '<div class="empty-state"><p>No tasks found. Create your first task!</p></div>'; return; }
+  el.innerHTML = data.tasks.map(t => renderTaskCard(t, true)).join('');
+}
+
+function renderTaskCard(t, showActions = false) {
+  const priorityColors = { low:'var(--accent-secondary)', medium:'var(--accent-warning)', high:'var(--accent-primary)', critical:'var(--accent-danger)' };
+  const color = priorityColors[t.priority] || 'var(--accent-warning)';
+  const overdueBadge = t.is_overdue ? '<span style="color:var(--accent-danger);font-size:0.7rem;">⚠ OVERDUE</span>' : '';
+  const dl = t.deadline ? new Date(t.deadline).toLocaleDateString() : 'No deadline';
+  const actions = showActions ? `
+    <div class="task-actions">
+      ${t.status !== 'completed' ? `<button class="btn-xs btn-ghost" onclick="completeTask(${t.id})">✓ Done</button>` : ''}
+      <button class="btn-xs btn-danger" onclick="deleteTask(${t.id})">Delete</button>
+    </div>` : '';
+  return `
+    <div class="task-card glass-effect" id="task-${t.id}">
+      <div class="task-priority-bar" style="background:${color}"></div>
+      <div class="task-body">
+        <div class="task-title-row">
+          <span class="task-title ${t.status === 'completed' ? 'completed' : ''}">${t.title}</span>
+          ${overdueBadge}
+          <span class="task-badge" style="color:${color};border-color:${color}20;background:${color}10">${t.priority}</span>
+        </div>
+        <div class="task-meta">
+          <span>${t.subject}</span>
+          <span>📅 ${dl}</span>
+          <span>⏱ ${t.duration_hrs}hr</span>
+          <span style="color:var(--accent-cyan);font-size:0.73rem;">urgency: ${t.urgency_score}</span>
+        </div>
+        ${actions}
+      </div>
+    </div>`;
+}
+
+async function completeTask(id) {
+  await fetch('/api/tasks/' + id, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'completed'}) });
+  showToast('Task completed! 🎉', 'success');
+  loadTasks(); loadDashboard();
+}
+
+async function deleteTask(id) {
+  if (!confirm('Delete this task?')) return;
+  await fetch('/api/tasks/' + id, { method:'DELETE' });
+  showToast('Task deleted.', 'info');
+  loadTasks(); loadDashboard();
+}
+
+/* ── Add Task ──────────────────────────────────────── */
+function showAddTaskModal() { document.getElementById('add-task-modal').style.display = 'flex'; }
+function closeTaskModal()   { document.getElementById('add-task-modal').style.display = 'none'; }
+document.getElementById('add-task-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closeTaskModal(); });
+
+async function handleAddTask(e) {
+  e.preventDefault();
+  const btn = document.getElementById('task-submit-btn');
+  const err = document.getElementById('task-error');
+  btn.disabled = true; btn.querySelector('.btn-text').textContent = 'Adding…'; err.style.display='none';
+  try {
+    const deadline = document.getElementById('task-deadline').value;
+    const res = await fetch('/api/tasks', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        title:       document.getElementById('task-title').value,
+        description: document.getElementById('task-desc').value,
+        subject:     document.getElementById('task-subject').value,
+        priority:    document.getElementById('task-priority').value,
+        deadline:    deadline ? new Date(deadline).toISOString() : null,
+        duration_hrs:parseFloat(document.getElementById('task-duration').value),
+        tags:        document.getElementById('task-tags').value,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to add task');
+    showToast('Task added! ✅', 'success');
+    closeTaskModal();
+    document.getElementById('task-form').reset();
+    loadTasks(); loadDashboard();
+  } catch(ex) { err.textContent=ex.message; err.style.display='block'; }
+  finally { btn.disabled=false; btn.querySelector('.btn-text').textContent='Add Task'; }
+}
+
+/* ── AI Scheduler ──────────────────────────────────── */
+async function runScheduler() {
+  const budget = parseFloat(document.getElementById('sched-budget').value);
+  const algo   = document.getElementById('sched-algo').value;
+
+  let url = '/api/schedule';
+  let body = JSON.stringify({ time_budget_hrs: budget });
+
+  if (algo === 'heap') { url = '/api/schedule/heap'; body = null; }
+  else if (algo === 'edf') { url = '/api/schedule/edf'; body = null; }
+
+  const opts = body ? { method:'POST', headers:{'Content-Type':'application/json'}, body } : { method:'GET' };
+  const res  = await fetch(url, opts);
+  const data = await res.json();
+  const tasks = data.schedule || data.tasks || [];
+
+  const el = document.getElementById('schedule-result');
+  if (!tasks.length) { el.innerHTML = '<div class="empty-state"><p>No pending tasks to schedule.</p></div>'; return; }
+
+  const info = data.algorithm ? `<div class="algo-pipeline glass-effect"><div class="algo-label">🐍 Python Pipeline</div><div class="algo-name">${data.algorithm}</div><div class="algo-meta">${tasks.length} tasks · ${data.total_hrs || '?'}hrs</div></div>` : '';
+  el.innerHTML = info + '<div class="task-list">' + tasks.map((t,i) => `
+    <div class="task-card glass-effect" style="border-left:3px solid var(--accent-primary);">
+      <div class="task-priority-bar" style="background:var(--accent-primary)"></div>
+      <div class="task-body">
+        <div class="task-title-row">
+          <span class="schedule-rank">#${i+1}</span>
+          <span class="task-title">${t.title}</span>
+          <span class="task-badge" style="color:var(--accent-primary);border-color:rgba(129,140,248,0.2);background:rgba(129,140,248,0.1)">urgency: ${t.urgency_score}</span>
+        </div>
+        <div class="task-meta"><span>${t.subject}</span><span>⏱ ${t.duration_hrs}hr</span></div>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+/* ── Analytics ─────────────────────────────────────── */
+async function loadAnalytics() {
+  const res  = await fetch('/api/analytics');
+  const data = await res.json();
+  const ins  = data.insights;
+
+  document.getElementById('an-hours').textContent = ins.total_hours + 'h';
+  document.getElementById('an-avg').textContent   = ins.avg_session + 'min';
+  const trendEl = document.getElementById('an-trend');
+  trendEl.textContent = ins.trend.toUpperCase();
+  trendEl.className   = 'analytics-value ' + (ins.trend === 'improving' ? 'accent-secondary' : ins.trend === 'declining' ? 'accent-danger' : 'accent-warning');
+  document.getElementById('an-best').textContent = ins.best_day || '—';
+
+  const sugg = document.getElementById('suggestions-list');
+  sugg.innerHTML = (ins.suggestions || []).map(s => `<div class="suggestion-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>${s}</div>`).join('');
+
+  drawChart(data.sessions, ins.sma_7d);
+}
+
+function drawChart(sessions, sma) {
+  const canvas = document.getElementById('analytics-chart');
+  const ctx    = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth; canvas.height = 160;
+  const W = canvas.width, H = canvas.height, pad = 30;
+  ctx.clearRect(0, 0, W, H);
+
+  const vals = sessions.map(s => s.duration_min);
+  if (!vals.length) { ctx.fillStyle='rgba(255,255,255,0.2)'; ctx.font='14px Inter'; ctx.fillText('No sessions logged yet', W/2 - 80, H/2); return; }
+  const max = Math.max(...vals, 1);
+  const x   = i => pad + (i / (vals.length - 1 || 1)) * (W - pad*2);
+  const y   = v => H - pad - (v / max) * (H - pad*2);
+
+  // Bar chart
+  ctx.fillStyle = 'rgba(129,140,248,0.15)';
+  vals.forEach((v, i) => {
+    const bx = x(i), bh = (v/max) * (H - pad*2);
+    ctx.fillRect(bx - 6, H - pad - bh, 12, bh);
+  });
+
+  // SMA line
+  if (sma.length >= 2) {
+    ctx.strokeStyle = 'var(--accent-cyan)';
+    ctx.lineWidth   = 2;
+    ctx.beginPath();
+    sma.forEach((v, i) => i === 0 ? ctx.moveTo(x(i), y(v)) : ctx.lineTo(x(i), y(v)));
+    ctx.stroke();
+  }
+}
+
+async function logSession() {
+  const res = await fetch('/api/analytics/session', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      duration_min: parseInt(document.getElementById('session-duration').value),
+      subject:      document.getElementById('session-subject').value,
+    }),
+  });
+  if (res.ok) { showToast('Session logged! 📊', 'success'); loadAnalytics(); }
+}
+
+/* ── Logout ────────────────────────────────────────── */
+async function handleLogout() {
+  await fetch('/api/auth/logout', { method:'POST' });
+  window.location.href = '/';
+}
+</script>
+{% endblock %}

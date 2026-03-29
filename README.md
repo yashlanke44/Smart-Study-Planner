@@ -1,18 +1,19 @@
 <div align="center">
 
-# 🧠 Smart Study Planner — AI Powered
+# 🧠 Smart Study Planner — Python Edition
 
-### An intelligent study planner built with real DSA algorithms, MVVM architecture, and a premium dark UI.
+### An AI-powered study planner built **100% in Python** using real DSA algorithms, Flask MVVM architecture, and a premium dark UI.
 
-[![Node.js](https://img.shields.io/badge/Node.js-v20-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![SQLite](https://img.shields.io/badge/Database-SQLite-003B57?logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![JWT](https://img.shields.io/badge/Auth-JWT-FB015B?logo=jsonwebtokens&logoColor=white)](https://jwt.io/)
-[![JavaScript](https://img.shields.io/badge/Vanilla_JS-ES6+-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/)
+[![SQLAlchemy](https://img.shields.io/badge/ORM-SQLAlchemy-D71F00?logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 [![License](https://img.shields.io/badge/License-MIT-818cf8)](LICENSE)
 
 <br/>
 
-**[🌐 Live Demo](https://yashlanke44.github.io/Smart-Study-Planner)** · **[📄 Report Bug](https://github.com/yashlanke44/Smart-Study-Planner/issues)** · **[💡 Request Feature](https://github.com/yashlanke44/Smart-Study-Planner/issues)**
+**[🌐 Live App](http://localhost:3000)** · **[📄 Report Bug](https://github.com/yashlanke44/Smart-Study-Planner/issues)** · **[💡 Request Feature](https://github.com/yashlanke44/Smart-Study-Planner/issues)**
 
 </div>
 
@@ -30,97 +31,155 @@
 
 ## ✨ Key Features
 
-| Feature | Description | Algorithm Used |
-|---------|-------------|----------------|
-| 🎯 **AI Schedule Generation** | Auto-generates optimal study timetables | Priority Queue (Min-Heap), DP Knapsack |
-| 📊 **Real-Time Analytics** | Tracks focus hours, trends & subject distribution | Sliding Window (SMA), Canvas API |
-| 🗂️ **Task Management** | O(1) CRUD operations with filters & sorting | Hash Map, Sorting Algorithms |
-| 🔀 **Dependency-Aware Ordering** | Respects prerequisite chains between topics | Topological Sort (Kahn's BFS) |
-| ⏰ **Deadline-Driven Scheduling** | Prioritizes tasks approaching their deadline | Greedy (Earliest Deadline First) |
-| 🔍 **Time Slot Allocation** | Efficiently finds available study windows | Binary Search |
-| 📈 **Productivity Suggestions** | AI-driven tips from behavior analysis | Heuristic Analysis |
-| 🔐 **Secure Authentication** | JWT tokens with bcrypt password hashing | JWT + bcrypt |
-| 📱 **Responsive Design** | Device selector for Mobile & Laptop views | CSS Grid + Media Queries |
-| 🎨 **Premium Neon UI** | Glassmorphism, animated SVGs, particles | CSS Animations, Canvas API |
+| Feature | Description | Python Implementation |
+|---------|-------------|----------------------|
+| 🎯 **AI Schedule Generation** | Multi-algorithm pipeline optimises study timetables | `heapq`, `collections.deque`, backtracking DP |
+| 📊 **Real-Time Analytics** | Study trends, SMA over sessions, Canvas charts | Sliding Window with `deque` |
+| 🗂️ **Task Management** | Full CRUD with filters, sorting and tagging | SQLAlchemy ORM, indexed queries |
+| 🔀 **Dependency Ordering** | Respects prerequisite chains | Kahn's BFS with `defaultdict` |
+| ⏰ **Deadline Scheduling** | Greedy nearest-deadline selection | Python `sorted()` with `datetime` keys |
+| 🔍 **Slot Allocation** | Available study window lookup | Classic binary search |
+| 📈 **Productivity Insights** | Heuristic AI tips from session history | SMA trend analysis |
+| 🔐 **Secure Auth** | JWT cookie-based session management | `Flask-JWT-Extended` + `bcrypt` |
+| 🗄️ **Persistent Storage** | SQLite via SQLAlchemy ORM | `Flask-SQLAlchemy` |
+| 📱 **Responsive UI** | Mobile & Laptop device selector | Jinja2 templates, CSS Grid |
 
 ---
 
-## 🏛️ Architecture — MVVM
+## 🏛️ Architecture — Python MVVM with Flask
 
 ```
 smart-study-planner/
-├── server.js                    # Express server + JWT auth
-├── package.json
-├── .gitignore
-├── public/
-│   ├── index.html               # SPA shell
-│   ├── css/
-│   │   ├── style.css            # Design system + layout + animations
-│   │   └── components.css       # UI components + micro-interactions
-│   └── js/
-│       ├── app.js               # Root module — DI container
-│       ├── utils.js             # Utilities (debounce, toast, confetti)
-│       ├── models/
-│       │   ├── TaskModel.js     # Hash Map CRUD + Observable
-│       │   ├── UserModel.js     # JWT auth state
-│       │   ├── SessionModel.js  # Streak & session tracking
-│       │   └── SchedulerModel.js # Pure DSA algorithms
-│       ├── views/
-│       │   ├── AuthView.js      # Login/signup rendering
-│       │   ├── TaskView.js      # Task list rendering
-│       │   ├── DashboardView.js # Stats & chart rendering
-│       │   ├── SchedulerView.js # Algorithm visualization
-│       │   ├── AnalyticsView.js # Canvas charts
-│       │   ├── SuggestionsView.js # AI tip cards
-│       │   └── AboutView.js     # DSA showcase
-│       └── viewmodels/
-│           ├── AuthViewModel.js
-│           ├── TaskViewModel.js
-│           ├── DashboardViewModel.js
-│           ├── SchedulerViewModel.js
-│           ├── AnalyticsViewModel.js
-│           └── SuggestionsViewModel.js
-└── screenshots/                 # For README
+├── app.py                      ← Flask Application (ViewModel Layer)
+│                                 All routes = ViewModels (business logic + state)
+├── config.py                   ← Configuration
+├── requirements.txt
+├── models/                     ← Model Layer (pure Python, zero UI coupling)
+│   ├── __init__.py
+│   ├── database.py             ← SQLAlchemy db instance
+│   ├── user.py                 ← User + StudySession models (bcrypt)
+│   ├── task.py                 ← Task model (urgency_score property)
+│   └── scheduler.py            ← ALL 6 DSA algorithms in Python ⭐
+├── templates/                  ← View Layer (Jinja2 templates)
+│   ├── base.html               ← Base template (canvas, fonts, toasts)
+│   ├── index.html              ← Landing page + Auth modal
+│   └── dashboard.html          ← Full app: tasks, scheduler, analytics
+└── static/
+    ├── css/style.css           ← Premium dark design system
+    └── js/app.js               ← Minimal JS (canvas + toasts ONLY)
 ```
 
-### MVVM Data Flow
+### Python MVVM Data Flow
 ```
-User Input → View → ViewModel → Model (pure logic)
-                ↘               ↙
-              ViewModel.notify(state)
-                ↘
-              View.render(state)
+HTTP Request
+    ↓
+Flask Route (ViewModel) ← app.py
+    ↓           ↑
+SQLAlchemy Model    DSA Algorithms
+  user.py           scheduler.py
+  task.py
+    ↓
+Jinja2 Template (View)
+    ↓
+HTTP Response → Browser
 ```
 
 ---
 
-## 🧬 DSA Algorithms Implemented
+## 🐍 Python DSA Engine — `models/scheduler.py`
 
-### 1. Priority Queue (Min-Heap)
-Schedules tasks by urgency score. O(log n) insert/extract. Used in the AI Scheduler for urgency-based ordering.
+All scheduling intelligence is implemented in pure Python:
 
-### 2. Topological Sort (Kahn's Algorithm)
-Handles task dependencies using BFS-based topological ordering. Ensures prerequisites are completed before dependent tasks.
+### 1. Min-Heap (Priority Queue) — `heapq`
+```python
+import heapq
 
-### 3. Greedy Algorithm (Earliest Deadline First)
-Selects tasks greedily by approaching deadline. O(n log n) sort + linear scan for fast scheduling.
+class MinHeap:
+    def push(self, task):
+        heapq.heappush(self._heap, (-task['urgency_score'], task['id'], task))
+    def pop(self):
+        _, _, task = heapq.heappop(self._heap)
+        return task
+```
+**Complexity**: O(log n) insert/extract · Used for urgency-first task ordering
+
+### 2. Topological Sort (Kahn's BFS) — `collections.deque`
+```python
+from collections import deque, defaultdict
+
+def topological_sort(tasks, dependencies):
+    queue = deque([tid for tid in task_ids if in_degree[tid] == 0])
+    while queue:
+        node = queue.popleft()
+        for neighbor in adj[node]:
+            in_degree[neighbor] -= 1
+            if in_degree[neighbor] == 0:
+                queue.append(neighbor)
+```
+**Complexity**: O(V + E) · Handles prerequisite chains
+
+### 3. Greedy EDF (Earliest Deadline First)
+```python
+def earliest_deadline_first(tasks):
+    has_deadline.sort(key=lambda t: datetime.fromisoformat(t['deadline']))
+    return has_deadline + no_deadline
+```
+**Complexity**: O(n log n) · Nearest-deadline-first greedy selection
 
 ### 4. Dynamic Programming (0/1 Knapsack)
-Maximizes task value within a time budget. Uses a 2D DP table to select the optimal subset of tasks.
+```python
+def knapsack_schedule(tasks, time_budget_hrs):
+    dp = [[0] * (W + 1) for _ in range(n + 1)]
+    for i in range(1, n + 1):
+        for w in range(W + 1):
+            if weights[i-1] <= w:
+                dp[i][w] = max(dp[i-1][w], dp[i-1][w-weights[i-1]] + values[i-1])
+    # Backtrack...
+```
+**Complexity**: O(n × W) · Maximises task value within time budget
 
-### 5. Binary Search
-O(log n) time slot allocation for finding the best available study window in a sorted schedule.
+### 5. Binary Search — Time Slot Allocation
+```python
+def find_available_slot(slots, target_hours):
+    lo, hi = 0, len(slots) - 1
+    while lo <= hi:
+        mid = (lo + hi) // 2
+        if slots[mid] >= target_hours: result = mid; hi = mid - 1
+        else: lo = mid + 1
+    return result
+```
+**Complexity**: O(log n) · Finds best available study window
 
-### 6. Sliding Window
-Computes moving averages for productivity trends (7-day SMA) in the analytics module.
+### 6. Sliding Window SMA — Productivity Analytics
+```python
+from collections import deque
+
+def sliding_window_sma(sessions, window=7):
+    deq = deque()
+    for duration in durations:
+        window_sum += duration; deq.append(duration)
+        if len(deq) > window: window_sum -= deq.popleft()
+        sma.append(window_sum / len(deq))
+```
+**Complexity**: O(n) · 7-day Simple Moving Average for trend analysis
+
+### Master Scheduler Pipeline
+```python
+def generate_schedule(tasks, time_budget_hrs=8.0, dependencies=None):
+    selected = knapsack_schedule(tasks, time_budget_hrs)   # Step 1: DP
+    topo     = topological_sort(selected, deps)             # Step 2: BFS
+    edf      = earliest_deadline_first(topo)                # Step 3: Greedy
+    final    = heap_schedule(edf)                           # Step 4: Heap
+    return { 'schedule': final, 'algorithm': 'Knapsack → Topo Sort → EDF → Min-Heap' }
+```
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- **Node.js** v18+ ([Download](https://nodejs.org/))
-- **npm** (comes with Node.js)
+- **Python** 3.10+ ([Download](https://python.org/))
+- **pip** (comes with Python)
 
 ### Installation
 
@@ -129,20 +188,27 @@ Computes moving averages for productivity trends (7-day SMA) in the analytics mo
 git clone https://github.com/yashlanke44/Smart-Study-Planner.git
 cd Smart-Study-Planner
 
-# 2. Install dependencies
-npm install
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate      # macOS/Linux
+# venv\Scripts\activate       # Windows
 
-# 3. Start the development server
-npm start
+# 3. Install Python dependencies
+pip install -r requirements.txt
 
-# 4. Open in browser
+# 4. Run the Flask server
+python app.py
+
+# 5. Open in browser
 # → http://localhost:3000
 ```
 
 ### Environment Variables (Optional)
 ```env
+SECRET_KEY=your-flask-secret
+JWT_SECRET_KEY=your-jwt-secret
 PORT=3000
-JWT_SECRET=your_secret_key_here
+FLASK_DEBUG=true
 ```
 
 ---
@@ -151,37 +217,15 @@ JWT_SECRET=your_secret_key_here
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| `--accent-primary` | `#818cf8` (Indigo) | Primary actions, links |
-| `--accent-secondary` | `#34d399` (Emerald) | Success, completed |
-| `--accent-cyan` | `#22d3ee` (Cyan) | Highlights, focus |
-| `--accent-warning` | `#fbbf24` (Amber) | Warnings, streaks |
-| `--accent-danger` | `#f87171` (Rose) | Errors, overdue |
-| `--accent-pink` | `#f472b6` (Pink) | Analytics, charts |
+| `--accent-primary` | `#818cf8` Indigo | Primary actions |
+| `--accent-secondary` | `#34d399` Emerald | Success, completed |
+| `--accent-cyan` | `#22d3ee` Cyan | Highlights |
+| `--accent-warning` | `#fbbf24` Amber | Warnings, streaks |
+| `--accent-danger` | `#f87171` Rose | Errors, overdue |
+| `--accent-pink` | `#f472b6` Pink | Charts, analytics |
 | `--bg-primary` | `#09090b` | Page background |
 | `--font-main` | `Inter` | UI text |
 | `--font-mono` | `JetBrains Mono` | Code, metrics |
-
----
-
-## 📱 Study Modules
-
-Pre-built modules for core CS subjects:
-
-- 🔮 **Data Structures & Algorithms** — 12 units, 150+ problems
-- 💻 **Operating Systems** — 8 units (scheduling, memory, I/O)
-- 🗄️ **Database Management** — 9 units (SQL, normalization, B+ trees)
-- 🌐 **Computer Networks** — 7 units (OSI, TCP/IP, routing)
-- 📐 **Discrete Mathematics** — 6 units (sets, combinatorics, graphs)
-- 🖥️ **Web Development** — 10 units (HTML/CSS, JS, React, Node)
-
----
-
-## 🛡️ Security
-
-- JWT-based stateless authentication
-- bcrypt password hashing with salt rounds
-- Client-side token storage with expiry validation
-- CORS-protected API endpoints
 
 ---
 
@@ -189,26 +233,28 @@ Pre-built modules for core CS subjects:
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Vanilla JS (ES6+), HTML5, CSS3 |
-| **Backend** | Node.js, Express 4.x |
-| **Auth** | JWT (jsonwebtoken), bcryptjs |
-| **Charts** | Canvas API (custom rendering) |
-| **Animations** | CSS Keyframes, SVG SMIL |
-| **Architecture** | MVVM (Model-View-ViewModel) |
-| **Storage** | localStorage (client-side) |
+| **Language** | Python 3.10+ |
+| **Web Framework** | Flask 3.0 |
+| **ORM** | Flask-SQLAlchemy |
+| **Database** | SQLite |
+| **Authentication** | Flask-JWT-Extended + bcrypt |
+| **Templates** | Jinja2 |
+| **Frontend** | Minimal Vanilla JS (canvas + toasts only) |
+| **Styling** | CSS3 (Glassmorphism, Neon animations) |
+| **Architecture** | MVVM (Flask Routes = ViewModel) |
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**Built with ❤️ and real algorithms by [@yashlanke44](https://github.com/yashlanke44)**
+**Built 100% in Python 🐍 by [@yashlanke44](https://github.com/yashlanke44)**
 
-*No AI-generated colors. No placeholder images. Just pure DSA-backed intelligence.*
+*Real algorithms. Real data persistence. Zero JavaScript business logic.*
 
 </div>
